@@ -254,7 +254,12 @@ async function getOTPVersions(osVersion) {
   let otpVersionsListings
   let originListing
   if (process.platform === 'linux') {
-    originListing = `/builds/otp/${osVersion}/builds.txt`
+    let osArchitecture = getRunnerOSArchitecture()
+    if (osArchitecture.length > 0) {
+      osArchitecture = `${osArchitecture}/`
+    }
+
+    originListing = `/builds/otp/${osArchitecture}${osVersion}/builds.txt`
     otpVersionsListings = await doWithMirrors({
       hexMirrors: hexMirrorsInput(),
       actionTitle: `fetch ${originListing}`,
@@ -476,6 +481,28 @@ function isRC(ver) {
 
 function isKnownBranch(ver) {
   return ['main', 'master', 'maint'].includes(ver)
+}
+
+function githubARMRunnerArchs() {
+  return ['ARM', 'ARM64']
+}
+
+function githubAMDRunnerArchs() {
+  return ['X86', 'X64']
+}
+
+function getRunnerOSArchitecture() {
+  // These options come from:
+  // https://docs.github.com/en/actions/learn-github-actions/variables#default-environment-variables
+  if (githubARMRunnerArchs().includes(process.env.RUNNER_ARCH)) {
+    return 'arm64'
+  }
+
+  if (githubAMDRunnerArchs().includes(process.env.RUNNER_ARCH)) {
+    return 'amd64'
+  }
+
+  return ''
 }
 
 function getRunnerOSVersion() {
