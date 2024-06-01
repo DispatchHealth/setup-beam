@@ -10086,6 +10086,8 @@ async function getOTPVersions(osVersion) {
   let originListing
   if (process.platform === 'linux') {
     let osArchitecture = getRunnerOSArchitecture()
+    console.log(process.env)
+    console.log(osArchitecture)
     if (osArchitecture.length > 0) {
       osArchitecture = `${osArchitecture}/`
     }
