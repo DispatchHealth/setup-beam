@@ -9891,7 +9891,9 @@ async function main() {
 
 async function installOTP(otpSpec, osVersion) {
   const otpVersion = await getOTPVersion(otpSpec, osVersion)
-  core.startGroup(`Installing Erlang/OTP ${otpVersion} - built on ${osVersion}`)
+  core.startGroup(
+    `Installing Erlang/OTP ${otpVersion} - built on ${getRunnerOSArchitecture()}/${osVersion}`,
+  )
   await doWithMirrors({
     hexMirrors: hexMirrorsInput(),
     actionTitle: `install Erlang/OTP ${otpVersion}`,
@@ -10085,14 +10087,7 @@ async function getOTPVersions(osVersion) {
   let otpVersionsListings
   let originListing
   if (process.platform === 'linux') {
-    let osArchitecture = getRunnerOSArchitecture()
-    console.log(process.env)
-    console.log(osArchitecture)
-    if (osArchitecture.length > 0) {
-      osArchitecture = `${osArchitecture}/`
-    }
-
-    originListing = `/builds/otp/${osArchitecture}${osVersion}/builds.txt`
+    originListing = `/builds/otp/${getRunnerOSArchitecture()}/${osVersion}/builds.txt`
     otpVersionsListings = await doWithMirrors({
       hexMirrors: hexMirrorsInput(),
       actionTitle: `fetch ${originListing}`,
@@ -10335,7 +10330,7 @@ function getRunnerOSArchitecture() {
     return 'amd64'
   }
 
-  return ''
+  throw new Error('Invalid architeture')
 }
 
 function getRunnerOSVersion() {
@@ -10576,7 +10571,7 @@ async function install(toolName, opts) {
         tool: 'Erlang/OTP',
         linux: {
           downloadToolURL: () =>
-            `${hexMirror}/builds/otp/${versionSpec}.tar.gz`,
+            `${hexMirror}/builds/otp/${getRunnerOSArchitecture()}/${versionSpec}.tar.gz`,
           extract: async (file) => {
             const dest = undefined
             const flags = ['zx', '--strip-components=1']
